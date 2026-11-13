@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   motion,
   useMotionValue,
@@ -9,6 +11,11 @@ import {
   useReducedMotion,
 } from 'framer-motion'
 import type { MotionValue } from 'framer-motion'
+import neemLabelArt from '../assets/botanical-labels/neem.png'
+import amlaLabelArt from '../assets/botanical-labels/amla.png'
+import neemamlaLabelArt from '../assets/botanical-labels/neemamla.png'
+import bhringrajLabelArt from '../assets/botanical-labels/bhringraj.png'
+import hibiscusLabelArt from '../assets/botanical-labels/hibiscus.png'
 import './scroll-sequence.css'
 
 // Keep the sequence, loading strategy, and story timing together for easy edits.
@@ -29,6 +36,15 @@ const SECOND_FRAME_PATH = (frame: number) => SECOND_FRAME_PATHS[frame] ?? FRAME_
 const BG = '#061c17'
 const BATCH_SIZE = 10
 const SPRING = { stiffness: 90, damping: 28, mass: 0.6 }
+gsap.registerPlugin(ScrollTrigger)
+
+const OIL_COLLECTION = [
+  { name: 'Neem', note: 'Clarifying care', flower: '✳', art: neemLabelArt },
+  { name: 'Amla', note: 'Root nourishment', flower: '✿', art: amlaLabelArt },
+  { name: 'Neemamla', note: 'The signature blend', flower: '❋', art: neemamlaLabelArt },
+  { name: 'Bhringraj', note: 'Strength ritual', flower: '❀', art: bhringrajLabelArt },
+  { name: 'Hibiscus', note: 'Softness + shine', flower: '✿', art: hibiscusLabelArt },
+]
 type Beat = {
   range: [number, number, number, number]
   eyebrow: string
@@ -65,9 +81,9 @@ function StoryBeat({ beat, progress, index, reduced, currentBeat, ctaHref, ctaLa
   ctaLabel: string
   zoomText: boolean
 }) {
-  const opacity = useTransform(progress, beat.range, [0, 1, 1, 0])
-  const y = useTransform(progress, beat.range, [reduced ? 0 : 32, 0, 0, reduced ? 0 : -20])
-  const scale = useTransform(progress, beat.range, reduced || !zoomText ? [1, 1, 1, 1] : [0.62, 1, 1.08, 0.86])
+  const opacity = useTransform(progress, beat.range, index === 0 ? [1, 1, 1, 0] : [0, 1, 1, 0])
+  const y = useTransform(progress, beat.range, index === 0 ? [0, 0, 0, reduced ? 0 : -20] : [reduced ? 0 : 32, 0, 0, reduced ? 0 : -20])
+  const scale = useTransform(progress, beat.range, reduced || !zoomText ? [1, 1, 1, 1] : [index === 0 ? 0.92 : 0.62, 1, 1.08, 0.86])
   const x = useTransform(progress, beat.range, zoomText ? ['-50%', '-50%', '-50%', '-50%'] : ['0%', '0%', '0%', '0%'])
   const ruleScale = useTransform(progress, beat.range, reduced ? [1, 1, 1, 1] : [0, 1, 1, 0])
   const filter = useTransform(progress, beat.range, reduced
@@ -181,7 +197,6 @@ function SequenceSection({ sectionId, sectionLabel, beats, frameCount, framePath
   const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.035], [1, 0])
   const sweepX = useTransform(progress, [0.13, 0.17, 0.37, 0.41, 0.60, 0.64, 0.82, 0.86], ['-110%', '110%', '-110%', '110%', '-110%', '110%', '-110%', '110%'])
   const sweepOpacity = useTransform(progress, [0.13, 0.17, 0.37, 0.41, 0.60, 0.64, 0.82, 0.86], [0, 0.42, 0, 0.42, 0, 0.42, 0, 0.42])
-  const entryOpacity = useTransform(progress, [0, 0.035], [1, 0])
   const exitOpacity = useTransform(progress, [0.94, 1], [0, 0.52])
 
   useEffect(() => {
@@ -342,7 +357,7 @@ function SequenceSection({ sectionId, sectionLabel, beats, frameCount, framePath
 
           <div className="sequence-vignette" aria-hidden="true" />
           {!prefersReducedMotion && <div className="sequence-grain" aria-hidden="true" />}
-          <motion.div className="sequence-entry-wash" style={{ opacity: entryOpacity }} aria-hidden="true" />
+          <div className="sequence-entry-wash" aria-hidden="true" />
           <motion.div className="sequence-sweep" style={{ x: sweepX, opacity: sweepOpacity }} aria-hidden="true" />
           <motion.div className="sequence-exit-wash" style={{ opacity: exitOpacity }} aria-hidden="true" />
 
@@ -359,7 +374,7 @@ function SequenceSection({ sectionId, sectionLabel, beats, frameCount, framePath
           </div>
 
           <motion.div className="sequence-scroll-hint" style={{ opacity: scrollHintOpacity }} aria-hidden="true">
-            <span>SCROLL TO EXPLORE</span><i />
+            <span>SWIPE / SCROLL TO EXPLORE</span><i />
           </motion.div>
 
           {activated && !revealed && (
@@ -458,6 +473,155 @@ function RootsInterlude() {
   )
 }
 
+function OilCollectionReveal() {
+  const sectionRef = useRef<HTMLElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const section = sectionRef.current
+    const stage = stageRef.current
+    if (!section || !stage) return
+
+    const context = gsap.context(() => {
+      const cards = gsap.utils.toArray<HTMLElement>('.oil-reveal-card')
+      const heading = stage.querySelector('.oil-reveal-heading')
+      const footer = stage.querySelector('.oil-reveal-footer')
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const isMobile = window.innerWidth < 768
+      const cardWidth = cards[0]?.offsetWidth ?? 150
+      const cardSpacing = Math.min(210, cardWidth + (isMobile ? 12 : 32))
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: prefersReduced ? false : 1.15,
+        },
+      })
+
+      timeline.fromTo(heading, { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, 0)
+      timeline.to(cards, {
+        x: (index) => (index - 2) * cardSpacing,
+        y: (index) => [12, -16, 0, -16, 12][index],
+        rotation: (index) => [-7, -3, 0, 3, 7][index],
+        scale: (index) => index === 2 ? 1 : 0.96,
+        opacity: 1,
+        duration: 0.65,
+        stagger: 0.045,
+        ease: 'power3.out',
+      }, 0.24)
+      timeline.fromTo(footer, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, 0.58)
+    }, stage)
+
+    return () => context.revert()
+  }, [])
+
+  return (
+    <section id="oil-collection" ref={sectionRef} className="oil-reveal-scroll" aria-label="The Neemamla botanical oil collection">
+      <div ref={stageRef} className="oil-reveal-stage">
+        <div className="oil-reveal-orbit oil-reveal-orbit--outer" aria-hidden="true" />
+        <div className="oil-reveal-orbit oil-reveal-orbit--inner" aria-hidden="true" />
+        <header className="oil-reveal-heading">
+          <span className="oil-reveal-eyebrow"><i /> THE BOTANICAL COLLECTION <i /></span>
+          <h2>One ritual.<br /><em>Five ways to bloom.</em></h2>
+          <p>Meet the plant-powered oils made for your own kind of hair care.</p>
+        </header>
+
+        <div className="oil-reveal-products" aria-label="Five botanical hair oils">
+          {OIL_COLLECTION.map((oil) => (
+            <article className="oil-reveal-card" key={oil.name}>
+              <div className="oil-bottle" aria-label={`${oil.name} hair oil bottle`} role="img">
+                <span className="oil-bottle-cap" />
+                <span className="oil-bottle-neck" />
+                <span className="oil-bottle-glass">
+                  <span className="oil-bottle-shine" />
+                  <span className="oil-bottle-label">
+                    <img className="oil-bottle-label-art" src={oil.art} alt="" loading="lazy" decoding="async" />
+                    <b>neem<span>amla</span></b><i>{oil.name.toUpperCase()}</i><small>BOTANICAL HAIR OIL</small><em>{oil.flower}</em>
+                  </span>
+                </span>
+                <span className="oil-bottle-base" />
+              </div>
+              <h3>{oil.name}</h3>
+              <p>{oil.note}</p>
+            </article>
+          ))}
+        </div>
+
+        <footer className="oil-reveal-footer">
+          <span>ROOTED IN NATURE <i>✳</i> MADE FOR YOUR RITUAL</span>
+          <a href="#top">BACK TO THE BEGINNING <b aria-hidden="true">↑</b></a>
+        </footer>
+      </div>
+    </section>
+  )
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <div className="site-footer__upper">
+        <div className="site-footer__inner">
+          <div className="site-footer__masthead">
+            <a className="site-footer__wordmark" href="#top" aria-label="Neemamla home">neem<span>amla</span><i>®</i></a>
+            <span className="site-footer__signature">ROOTS OF NATURE <i>✳</i> STRENGTH OF AYURVEDA</span>
+          </div>
+
+          <div className="site-footer__main">
+            <div className="site-footer__story">
+              <span className="site-footer__eyebrow">A LITTLE CARE GOES A LONG WAY</span>
+              <h2>Make room for<br /><em>a softer ritual.</em></h2>
+              <p>Neemamla brings the goodness of botanicals into the moments you make your own.</p>
+              <a className="site-footer__cta" href="/shop">BUY ONLINE <span aria-hidden="true">↗</span></a>
+            </div>
+
+            <div className="site-footer__connect">
+              <nav className="site-footer__nav" aria-label="Footer navigation">
+                <span className="site-footer__eyebrow">DISCOVER NEEMAMLA</span>
+                <a href="#top"><span>01</span> The beginning <i aria-hidden="true">↗</i></a>
+                <a href="#next-chapter"><span>02</span> The ritual <i aria-hidden="true">↗</i></a>
+                <a href="#second-story"><span>03</span> The journey <i aria-hidden="true">↗</i></a>
+                <a href="#oil-collection"><span>04</span> The collection <i aria-hidden="true">↗</i></a>
+              </nav>
+
+              <div className="site-footer__social">
+                <span className="site-footer__eyebrow">FOLLOW ALONG</span>
+                <div className="site-footer__social-grid">
+                  <a className="social-button social-button--instagram" href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Find Neemamla on Instagram">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5" /><circle cx="12" cy="12" r="4.1" /><circle className="social-button__dot" cx="17.8" cy="6.5" r="1" /></svg><span>Instagram</span>
+                  </a>
+                  <a className="social-button social-button--facebook" href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Find Neemamla on Facebook">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.1 21v-8.2h2.8l.4-3.2h-3.2V7.5c0-.9.3-1.5 1.6-1.5h1.7V3.2c-.3 0-1.4-.2-2.6-.2-2.7 0-4.5 1.6-4.5 4.7v1.9H7.4v3.2h2.9V21z" /></svg><span>Facebook</span>
+                  </a>
+                  <a className="social-button social-button--youtube" href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="Find Neemamla on YouTube">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.4 7.1a2.5 2.5 0 0 0-1.8-1.8C18 4.9 12 4.9 12 4.9s-6 0-7.6.4a2.5 2.5 0 0 0-1.8 1.8A26 26 0 0 0 2.2 12a26 26 0 0 0 .4 4.9 2.5 2.5 0 0 0 1.8 1.8c1.6.4 7.6.4 7.6.4s6 0 7.6-.4a2.5 2.5 0 0 0 1.8-1.8 26 26 0 0 0 .4-4.9 26 26 0 0 0-.4-4.9zM10 15.2V8.8l5.5 3.2z" /></svg><span>YouTube</span>
+                  </a>
+                  <a className="social-button social-button--pinterest" href="https://www.pinterest.com/" target="_blank" rel="noreferrer" aria-label="Find Neemamla on Pinterest">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3.5 18.3c0-.8 0-1.9.2-2.8l1.3-5.5s-.3-.6-.3-1.5c0-1.4.8-2.4 1.8-2.4.9 0 1.3.7 1.3 1.5 0 .9-.6 2.3-.9 3.6-.3 1.1.5 2 1.6 2 2 0 3.4-2.6 3.4-5.7 0-2.3-1.6-4-4.4-4-3.2 0-5.2 2.4-5.2 5.1 0 .9.3 1.8.8 2.3.2.3.3.4.2.7l-.3 1.1c0 .3-.2.4-.5.3-1.4-.6-2.1-2.2-2.1-4 0-3 2.6-6.6 7.8-6.6 4.2 0 7 3 7 6.2 0 4.3-2.4 7.5-5.9 7.5-1.2 0-2.4-.7-2.8-1.4l-.8 3c-.3 1-.9 2-1.3 2.7A9.5 9.5 0 1 0 12 2.5z" /></svg><span>Pinterest</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="site-footer__care">
+                <span className="site-footer__eyebrow">CUSTOMER CARE</span>
+                <a href="tel:19001800160X">1900 1800 160X</a>
+                <a className="site-footer__email-prompt" href="mailto:sales@neemamla.com">sales@neemamla.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="site-footer__lower">
+        <div className="site-footer__inner site-footer__bottom">
+          <span>© {new Date().getFullYear()} NEEMAMLA. ROOTED IN NATURE.</span>
+          <a href="#top">BACK TO THE TOP <b aria-hidden="true">↑</b></a>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
 export default function ScrollSequence() {
   return (
     <main className="sequence-page">
@@ -467,8 +631,8 @@ export default function ScrollSequence() {
         beats={FIRST_BEATS}
         frameCount={FIRST_FRAME_COUNT}
         framePath={FRAME_PATH}
-        navTarget="#next-chapter"
-        navCopy="Discover the ritual"
+        navTarget="/shop"
+        navCopy="Buy Online"
         ctaTarget="#next-chapter"
         ctaCopy="Find Your Flavor"
         loaderCopy="A botanical ritual, coming into focus"
@@ -480,14 +644,16 @@ export default function ScrollSequence() {
         beats={SECOND_BEATS}
         frameCount={SECOND_FRAME_COUNT}
         framePath={SECOND_FRAME_PATH}
-        navTarget="#next-chapter"
-        navCopy="The ritual"
+        navTarget="/shop"
+        navCopy="Buy Online"
         ctaTarget="#next-chapter"
         ctaCopy="Explore the ritual"
         loaderCopy="A closer look at the ritual"
         lazyLoad
         zoomText
       />
+      <OilCollectionReveal />
+      <SiteFooter />
     </main>
   )
 }
