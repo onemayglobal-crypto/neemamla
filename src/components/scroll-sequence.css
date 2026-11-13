@@ -123,7 +123,17 @@
   will-change: transform, opacity;
 }
 
+.oil-bottle-float {
+  position: relative;
+  width: 100px;
+  height: 244px;
+  margin-top: 16px;
+  will-change: transform;
+}
+
 .oil-bottle {
+  --bottle-base-scale: 1;
+  --bottle-hover-scale: 1.1;
   position: relative;
   top: 70px;
   display: flex;
@@ -131,8 +141,18 @@
   height: 228px;
   flex-direction: column;
   align-items: center;
-  margin-top: 16px;
+  transform: scale(var(--bottle-base-scale));
+  transform-origin: top center;
+  transition: transform 280ms cubic-bezier(0.2, 0.75, 0.25, 1);
   filter: drop-shadow(0 20px 26px rgba(0, 0, 0, 0.34));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .oil-bottle:hover { transform: scale(var(--bottle-hover-scale)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oil-bottle { transition: none; }
 }
 
 .oil-bottle-cap {
@@ -896,7 +916,8 @@
   .oil-reveal-heading p { max-width: 290px; margin: 9px auto 0; font-size: 8px; line-height: 1.6; }
   .oil-reveal-products { top: 43%; width: 100%; height: min(240px, 45vh); margin-top: 0; }
   .oil-reveal-card { width: calc((100vw - 82px) / 5); }
-  .oil-bottle { width: 72px; height: 140px; margin-top: 8px; transform: scale(0.64); transform-origin: top center; }
+  .oil-bottle-float { width: 72px; height: 148px; margin-top: 8px; }
+  .oil-bottle { --bottle-base-scale: 0.64; --bottle-hover-scale: 0.704; width: 72px; height: 140px; }
   .oil-reveal-card h3 { margin-top: -35px; font-size: clamp(11px, 3.5vw, 16px); white-space: nowrap; }
   .oil-reveal-card p { max-width: 100%; min-height: 20px; font-size: 6px; line-height: 1.4; }
   .oil-reveal-footer { right: 18px; bottom: 18px; left: 18px; font-size: 5px; letter-spacing: 0.1em; }

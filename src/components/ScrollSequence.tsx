@@ -484,17 +484,27 @@ function OilCollectionReveal() {
 
     const context = gsap.context(() => {
       const cards = gsap.utils.toArray<HTMLElement>('.oil-reveal-card')
+      const floatingBottles = gsap.utils.toArray<HTMLElement>('.oil-bottle-float')
       const heading = stage.querySelector('.oil-reveal-heading')
       const footer = stage.querySelector('.oil-reveal-footer')
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       const isMobile = window.innerWidth < 768
       const cardWidth = cards[0]?.offsetWidth ?? 150
       const cardSpacing = Math.min(210, cardWidth + (isMobile ? 12 : 32))
+      const floatTween = prefersReduced ? null : gsap.to(floatingBottles, {
+        y: -8,
+        duration: 2.4,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        stagger: { each: 0.16, from: 'center' },
+        paused: true,
+      })
       const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: section,
-          start: 'top top',
-          end: 'bottom bottom',
+          start: 'top 25%',
+          end: 'top top',
           scrub: prefersReduced ? false : 1.15,
         },
       })
@@ -509,8 +519,13 @@ function OilCollectionReveal() {
         duration: 0.65,
         stagger: 0.045,
         ease: 'power3.out',
-      }, 0.24)
-      timeline.fromTo(footer, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, 0.58)
+      }, 0.08)
+      timeline.fromTo(footer, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, 0.48)
+      timeline.eventCallback('onUpdate', () => {
+        if (!floatTween) return
+        if (timeline.progress() >= 0.995) floatTween.play()
+        else floatTween.pause(0)
+      })
     }, stage)
 
     return () => context.revert()
@@ -530,17 +545,19 @@ function OilCollectionReveal() {
         <div className="oil-reveal-products" aria-label="Five botanical hair oils">
           {OIL_COLLECTION.map((oil) => (
             <article className="oil-reveal-card" key={oil.name}>
-              <div className="oil-bottle" aria-label={`${oil.name} hair oil bottle`} role="img">
-                <span className="oil-bottle-cap" />
-                <span className="oil-bottle-neck" />
-                <span className="oil-bottle-glass">
-                  <span className="oil-bottle-shine" />
-                  <span className="oil-bottle-label">
-                    <img className="oil-bottle-label-art" src={oil.art} alt="" loading="lazy" decoding="async" />
-                    <b>neem<span>amla</span></b><i>{oil.name.toUpperCase()}</i><small>BOTANICAL HAIR OIL</small><em>{oil.flower}</em>
+              <div className="oil-bottle-float">
+                <div className="oil-bottle" aria-label={`${oil.name} hair oil bottle`} role="img">
+                  <span className="oil-bottle-cap" />
+                  <span className="oil-bottle-neck" />
+                  <span className="oil-bottle-glass">
+                    <span className="oil-bottle-shine" />
+                    <span className="oil-bottle-label">
+                      <img className="oil-bottle-label-art" src={oil.art} alt="" loading="lazy" decoding="async" />
+                      <b>neem<span>amla</span></b><i>{oil.name.toUpperCase()}</i><small>BOTANICAL HAIR OIL</small><em>{oil.flower}</em>
+                    </span>
                   </span>
-                </span>
-                <span className="oil-bottle-base" />
+                  <span className="oil-bottle-base" />
+                </div>
               </div>
               <h3>{oil.name}</h3>
               <p>{oil.note}</p>
