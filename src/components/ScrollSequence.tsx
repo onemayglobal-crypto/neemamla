@@ -56,8 +56,8 @@ type Beat = {
 
 const FIRST_BEATS: Beat[] = [
   { range: [0, 0.025, 0.12, 0.16], eyebrow: 'THE BOTANICAL HAIR RITUAL', title: 'Neemamla', body: 'Roots of nature. Strength of Ayurveda.', kind: 'hero' },
-  { range: [0.15, 0.19, 0.34, 0.39], eyebrow: '01 — PURIFY', title: 'Rooted in Neem', body: 'A time-honoured botanical to care for the scalp and roots.' },
-  { range: [0.38, 0.42, 0.57, 0.62], eyebrow: '02 — NOURISH', title: 'Charged with Amla', body: 'Amla-rich nourishment for hair that feels soft, glossy, and alive.' },
+  { range: [0.15, 0.19, 0.34, 0.39], eyebrow: 'PURIFY', title: 'Rooted in Neem', body: 'A time-honoured botanical to care for the scalp and roots.' },
+  { range: [0.38, 0.42, 0.57, 0.62], eyebrow: 'NOURISH', title: 'Charged with Amla', body: 'Amla-rich nourishment for hair that feels soft, glossy, and alive.' },
   { range: [0.61, 0.66, 0.79, 0.84], eyebrow: 'A LITTLE CARE GOES A LONG WAY', title: 'Pure oil. Visible strength.', body: 'A light, comforting ritual made for your everyday wash day.', kind: 'details' },
   { range: [0.83, 0.88, 0.98, 1], eyebrow: 'NATURE, IN EVERY DROP', title: 'Find Your Flavor', body: 'Make a little room for a ritual that feels like yours.', kind: 'closing' },
 ]
