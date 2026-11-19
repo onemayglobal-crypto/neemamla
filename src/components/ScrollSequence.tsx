@@ -39,11 +39,11 @@ const SPRING = { stiffness: 90, damping: 28, mass: 0.6 }
 gsap.registerPlugin(ScrollTrigger)
 
 const OIL_COLLECTION = [
-  { name: 'Neem', note: 'Clarifying care', flower: '✳', art: neemLabelArt },
-  { name: 'Amla', note: 'Root nourishment', flower: '✿', art: amlaLabelArt },
-  { name: 'Neemamla', note: 'The signature blend', flower: '❋', art: neemamlaLabelArt },
-  { name: 'Bhringraj', note: 'Strength ritual', flower: '❀', art: bhringrajLabelArt },
-  { name: 'Hibiscus', note: 'Softness + shine', flower: '✿', art: hibiscusLabelArt },
+  { name: 'Neem', flower: '✳', art: neemLabelArt },
+  { name: 'Amla', flower: '✿', art: amlaLabelArt },
+  { name: 'Neemamla', flower: '❋', art: neemamlaLabelArt },
+  { name: 'Bhringraj', flower: '❀', art: bhringrajLabelArt },
+  { name: 'Hibiscus', flower: '✿', art: hibiscusLabelArt },
 ]
 type Beat = {
   range: [number, number, number, number]
@@ -559,8 +559,6 @@ function OilCollectionReveal() {
                   <span className="oil-bottle-base" />
                 </div>
               </div>
-              <h3>{oil.name}</h3>
-              <p>{oil.note}</p>
             </article>
           ))}
         </div>

@@ -140,7 +140,6 @@ export default function ShopPage() {
                 <span className="shop-product__index">0{index + 1} <i /> BOTANICAL OIL</span>
                 <span className="shop-product__halo" aria-hidden="true" />
                 <ShopBottle product={product} />
-                <span className="shop-product__botanical" aria-hidden="true">✳</span>
               </div>
               <div className="shop-product__details">
                 <div className="shop-product__title-row"><h2>{product.name}</h2><span>{money(price)}</span></div>

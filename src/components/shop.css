@@ -151,18 +151,6 @@
     linear-gradient(145deg, #e8e7d5, #d8ddca 55%, #e6e3d2);
 }
 
-.shop-product__visual::before,
-.shop-product__visual::after {
-  position: absolute;
-  border: 1px solid color-mix(in srgb, var(--product-accent) 26%, transparent);
-  border-radius: 50%;
-  content: '';
-  pointer-events: none;
-}
-
-.shop-product__visual::before { width: 260px; height: 260px; }
-.shop-product__visual::after { width: 210px; height: 210px; border-style: dashed; opacity: 0.55; }
-
 .shop-product__index {
   position: absolute;
   top: 19px;
@@ -220,7 +208,6 @@
 .shop-bottle__variant { margin-top: 8px; color: #f3dfaa; font-size: 8px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 .shop-bottle__small { margin-top: 5px; color: rgba(255,255,255,.78); font-size: 5px; letter-spacing: 0.13em; }
 .shop-bottle__base { width: 134px; height: 13px; margin-top: -3px; border: 1px solid rgba(223, 187, 116, 0.6); border-radius: 0 0 50% 50%; background: linear-gradient(90deg, #50300f, #d39c39 35%, #a56c1d 70%, #472b11); }
-.shop-product__botanical { position: absolute; right: 24px; bottom: 31px; z-index: 2; color: var(--product-accent); font-size: 29px; opacity: 0.85; }
 
 .shop-product__details { padding: 21px 21px 20px; }
 .shop-product__title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
